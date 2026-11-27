@@ -1,0 +1,48 @@
+---
+title: BPMN. Подбор замены недоступному товару из «Избранного» Ozon
+config:
+  theme: neutral
+  look: classic
+  htmlLabels: true
+  swimlane:
+    ignoreCrossLaneEdges: false
+  flowchart:
+    nodeSpacing: 34
+    rankSpacing: 34
+    wrappingWidth: 180
+    padding: 8
+    titleTopMargin: 148
+---
+swimlane-beta LR
+    subgraph buyer["Покупатель и Приложение Ozon"]
+        unavailable@{ shape: bpmn-start, label: "Товара нет в наличии" }
+        tap@{ shape: bpmn-activity, label: "Нажать «Похожие»" }
+        message@{ shape: bpmn-activity, label: "Показать сообщение" }
+        no_results@{ shape: bpmn-end, label: "Подборка недоступна" }
+        show@{ shape: bpmn-activity, label: "Показать карточки" }
+        split{"+"}
+        received@{ shape: bpmn-end, label: "Подборка показана" }
+    end
+    subgraph recommendations["Сервис рекомендаций"]
+        candidates@{ shape: bpmn-activity, label: "Подобрать доступных<br/>кандидатов" }
+        available{"Есть<br/>кандидаты?"}
+        usable{"Ответ ML<br/>подходит?"}
+        rule_list@{ shape: bpmn-activity, label: "Отсортировать аналоги<br/>по близости цены" }
+        deliver@{ shape: bpmn-activity, label: "Вернуть до пяти<br/>аналогов" }
+    end
+    subgraph ml["ML и обучение"]
+        rank@{ shape: bpmn-activity, label: "Оценить кандидатов<br/>в ML-ранжировании" }
+        window@{ shape: bpmn-intermediate, label: "Таймер<br/>24 часа от показа" }
+        labels@{ shape: bpmn-activity, label: "Собрать метки<br/>по показам<br/>и корзине" }
+        feedback_done@{ shape: bpmn-end, label: "Разметка готова" }
+    end
+
+    unavailable --> tap --> candidates --> available
+    available -->|Да| rank
+    available -->|Нет или сбой каталога| message --> no_results
+    rank -->|Скоры и версия<br/>или ошибка| usable
+    usable -->|Да · по скору ≥ 0,10<br/>за ≤ 150 мс| deliver
+    usable -->|Нет · низкие скоры,<br/>ошибка или тайм-аут| rule_list --> deliver
+    deliver --> show --> split
+    split --> received
+    split -->|Показы карточек| window --> labels --> feedback_done

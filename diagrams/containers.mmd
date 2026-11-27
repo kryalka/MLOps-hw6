@@ -1,0 +1,38 @@
+---
+title: C4 Containers. Похожие товары в «Избранном» Ozon
+config:
+  theme: neutral
+  look: classic
+  flowchart:
+    titleTopMargin: 28
+    nodeSpacing: 38
+    rankSpacing: 58
+    wrappingWidth: 360
+    subGraphTitleMargin:
+      bottom: 18
+---
+flowchart TB
+    buyer["<b>Покупатель</b><br/>[Человек]"]
+    app["<b>Приложение Ozon</b><br/>[Внешняя система]"]
+    catalog["<b>Каталог и наличие Ozon</b><br/>[Внешняя система]"]
+
+    subgraph similar["Подбор похожих товаров Ozon"]
+        recommendations["<b>Сервис рекомендаций</b><br/>[Контейнер · Python, FastAPI]<br/>Отбирает кандидатов, выбирает путь выдачи,<br/>принимает события из приложения"]
+        ranking["<b>ML-ранжирование</b><br/>[Контейнер · Python, FastAPI, CatBoost]<br/>Считает скоры для доступных аналогов"]
+        journal[("<b>Журнал рекомендаций</b><br/>[Хранилище · PostgreSQL]<br/>Подборки, данные товаров, показы и корзина")]
+        retrain["<b>Переобучение</b><br/>[Контейнер · Airflow, CatBoost]<br/>Собирает метки и обучает новую модель"]
+        models[("<b>Файлы моделей</b><br/>[Хранилище · Общий том]<br/>Версии .cbm и указатель latest.txt")]
+
+        recommendations <-->|"Запрос: исходный товар и кандидаты<br/>Ответ: скоры и версия модели"| ranking
+        recommendations -->|"Пишет подборки,<br/>показы и корзину"| journal
+        retrain -->|"Читает данные товаров,<br/>показы и добавления"| journal
+        retrain -->|"Публикует .cbm<br/>и обновляет latest.txt"| models
+        ranking -->|"Загружает модель<br/>по latest.txt"| models
+    end
+
+    buyer -->|"Запрашивает похожие товары<br/>и видит результат"| app
+    app <-->|"Приложение: товар, зона, показы и корзина<br/>Сервис: подборка или сообщение"| recommendations
+    catalog <-->|"Сервис запрашивает аналоги в зоне.<br/>Каталог возвращает цены,<br/>характеристики и наличие."| recommendations
+
+    classDef core fill:#e1edfa,stroke:#356597,color:#152a42
+    class recommendations,ranking,journal,retrain,models core

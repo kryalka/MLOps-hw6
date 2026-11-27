@@ -1,0 +1,31 @@
+---
+title: C4 Components. ML-ранжирование
+config:
+  theme: neutral
+  look: classic
+  flowchart:
+    titleTopMargin: 28
+    nodeSpacing: 42
+    rankSpacing: 54
+    wrappingWidth: 350
+    subGraphTitleMargin:
+      bottom: 18
+---
+flowchart TB
+    subgraph ranking["ML-ранжирование · Контейнер"]
+        api["<b>API скоринга</b><br/>[Компонент · FastAPI]<br/>Принимает исходный товар и кандидатов<br/>от Сервиса рекомендаций"]
+        features["<b>Подготовка признаков</b><br/>[Компонент · Python]<br/>Сравнивает цены, бренды и характеристики<br/>из каталожных данных в запросе"]
+        version["<b>Загрузчик модели</b><br/>[Компонент · Python]<br/>Читает latest.txt и .cbm из Файлов моделей,<br/>держит рабочую версию в памяти"]
+        predict["<b>Инференс</b><br/>[Компонент · CatBoost]<br/>Считает вероятности добавления<br/>в корзину для всех кандидатов"]
+        response["<b>Формирование ответа</b><br/>[Компонент · Python]<br/>Возвращает ответ Сервису рекомендаций<br/>для шлюза «Ответ ML подходит?»"]
+
+        api -->|"Пары товаров"| features
+        api -->|"Запрос активной версии"| version
+        features -->|"Признаки по кандидатам"| predict
+        version -->|"Модель и версия"| predict
+        predict -->|"ID товаров, скоры и версия"| response
+        api -->|"Ошибка"| response
+    end
+
+    classDef component fill:#e1edfa,stroke:#356597,color:#152a42
+    class api,features,version,predict,response component
