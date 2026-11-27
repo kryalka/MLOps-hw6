@@ -14,9 +14,8 @@ CatBoost по разнице цен, совпадению бренда и хар
 
 - Справка Ozon описывает кнопку «Похожие» у недоступного товара в «Избранном». [Избранные товары](https://docs.ozon.ru/common/tovary/izbrannye-tovary/)
 - Наличие товара может различаться между городами. [Наличие товаров](https://docs.ozon.ru/common/tovary/harakteristiki-i-nalichie/)
-- Ozon Tech упоминает подбор похожих товаров к конкретному товару, в том числе для «Избранного». [Статья Ozon Tech](https://habr.com/ru/companies/ozontech/articles/1063304/)
+- Ozon Tech упоминает подбор похожих товаров к конкретному товару, в том числе для «Избранного». [Статья Ozon Tech (Habr)](https://habr.com/ru/companies/ozontech/articles/1063304/)
 
-Архитектура, признаки, порог, запасное правило и разметка спроектированы для задания. CatBoost, Airflow и версионирование через `latest.txt` взяты за основу из MLOps-hw5.
 
 ## Схемы
 
